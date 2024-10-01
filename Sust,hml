@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Insert your title here</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <img src="logo.png" alt="Sustainable Living Logo" class="logo">
+        <h1>Welcome to Sustainable Living</h1>
+        <p>Your guide to a net-zero future</p>
+    </header>
+
+    <nav>
+        <ul>
+            <li><a href="#about">About Us</a></li>
+            <li><a href="#goals">Our Goals</a></li>
+            <li><a href="#tips">Sustainable Tips</a></li>
+            <li><a href="#contact">Contact Us</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <section id="about">
+            <h2>About Us</h2>
+            <img src="about-image.jpg" alt="Sustainable Practices" class="about-image">
+            <p>At name of company, we are committed to promoting practices that lead to a sustainable and net-zero future. Our mission is to educate and inspire individuals and communities to make a positive impact on the environment.</p>
+        </section>
+
+        <section id="goals">
+            <h2>Our Goals</h2>
+            <ul>
+                <li>Reduce carbon emissions by 50% by 2030</li>
+                <li>Promote renewable energy sources</li>
+                <li>Encourage sustainable practices in daily life</li>
+            </ul>
+        </section>
+
+        <section id="tips">
+            <h2>Sustainable Tips</h2>
+            <ol>
+                <li>Use public transportation or bike to reduce your carbon footprint.</li>
+                <li>Implement energy-efficient practices at home.</li>
+                <li>Support local and sustainable businesses.</li>
+            </ol>
+        </section>
+
+        <section id="contact">
+            <h2>Contact Us</h2>
+            <form action="#" method="post">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" required>
+                
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
+
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" required></textarea>
+
+                <button type="submit">Send Message</button>
+            </form>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2024 Sustainable Living. All rights reserved.</p>
+    </footer>
+</body>
+</html>
