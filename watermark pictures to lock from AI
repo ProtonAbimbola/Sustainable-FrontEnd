@@ -1,0 +1,39 @@
+pip install Pillow
+from PIL import Image, ImageDraw, ImageFont
+
+def add_watermark(input_image_path, output_image_path, watermark_text, position, opacity=128):
+    # Open the original image
+    original = Image.open(input_image_path).convert("RGBA")
+
+    # Make the image editable
+    txt = Image.new("RGBA", original.size, (255, 255, 255, 0))
+
+    # Initialize the drawing context
+    draw = ImageDraw.Draw(txt)
+
+    # Load a font
+    # You may need to adjust the font path to where you have a .ttf file or use a default font.
+    font = ImageFont.truetype("arial.ttf", 40)
+
+    # Calculate text size and position
+    text_size = draw.textsize(watermark_text, font=font)
+    text_x = position[0] - text_size[0] // 2
+    text_y = position[1] - text_size[1] // 2
+
+    # Add text to the image
+    draw.text((text_x, text_y), watermark_text, fill=(255, 255, 255, opacity), font=font)
+
+    # Combine original image with watermark
+    watermarked = Image.alpha_composite(original, txt)
+
+    # Save the watermarked image
+    watermarked.show()
+    watermarked.convert("RGB").save(output_image_path, "JPEG")
+
+# Example usage
+input_image = "input.jpg"  # Path to your input image
+output_image = "output.jpg"  # Path to save the watermarked image
+watermark_text = "Protected"  # The watermark text
+position = (100, 100)  # Position of the watermark (x, y)
+
+add_watermark(input_image, output_image, watermark_text, position)
