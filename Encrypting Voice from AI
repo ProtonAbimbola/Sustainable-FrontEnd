@@ -1,0 +1,75 @@
+pip install pydub cryptography numpy
+import os
+import numpy as np
+from pydub import AudioSegment
+from cryptography.hazmat.primitives.ciphers import Cipher, algorithms, modes
+from cryptography.hazmat.backends import default_backend
+from cryptography.hazmat.primitives import padding
+import secrets
+
+# Function to load audio file and convert it to raw data
+def load_audio(file_path):
+    audio = AudioSegment.from_file(file_path)
+    audio = audio.set_frame_rate(16000).set_channels(1)  # Convert to mono, 16kHz
+    raw_data = np.array(audio.get_array_of_samples())
+    return raw_data, audio.frame_rate
+
+# Function to distort audio by adding noise
+def distort_audio(raw_data, noise_level=0.01):
+    noise = np.random.normal(0, noise_level, raw_data.shape)
+    distorted_data = raw_data + noise * np.max(raw_data)
+    return distorted_data.astype(np.int16)
+
+# Function to encrypt audio data using AES
+def encrypt_audio(data, key):
+    # Padding data to be AES block size compliant
+    padder = padding.PKCS7(128).padder()
+    padded_data = padder.update(data) + padder.finalize()
+
+    # Generate a random initialization vector (IV)
+    iv = secrets.token_bytes(16)
+    
+    # Create AES cipher in CBC mode
+    cipher = Cipher(algorithms.AES(key), modes.CBC(iv), backend=default_backend())
+    encryptor = cipher.encryptor()
+
+    # Encrypt the data
+    encrypted_data = encryptor.update(padded_data) + encryptor.finalize()
+
+    return iv + encrypted_data  # Return IV + encrypted data
+
+# Function to save encrypted audio to a file
+def save_encrypted_audio(file_path, encrypted_data):
+    with open(file_path, 'wb') as f:
+        f.write(encrypted_data)
+
+# Function to generate a random AES key
+def generate_aes_key():
+    return secrets.token_bytes(32)  # 256-bit key
+
+# Main encryption pipeline
+def encrypt_voice(file_path, output_path, noise_level=0.01):
+    # Load the audio file
+    raw_data, frame_rate = load_audio(file_path)
+
+    # Distort the audio with noise
+    distorted_data = distort_audio(raw_data, noise_level)
+
+    # Convert distorted data to bytes for encryption
+    byte_data = distorted_data.tobytes()
+
+    # Generate AES encryption key
+    key = generate_aes_key()
+
+    # Encrypt the audio data
+    encrypted_data = encrypt_audio(byte_data, key)
+
+    # Save the encrypted audio file
+    save_encrypted_audio(output_path, encrypted_data)
+
+    print(f"Audio encrypted and saved to {output_path}")
+    print(f"Encryption key (keep this secret!): {key.hex()}")
+
+# Example usage:
+# Encrypt the voice file and save the encrypted version
+encrypt_voice('input_voice.wav', 'encrypted_voice.dat', noise_level=0.05)
