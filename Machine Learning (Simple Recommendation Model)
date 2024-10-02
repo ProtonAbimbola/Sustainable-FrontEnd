@@ -1,0 +1,22 @@
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+
+# Sample check-in data
+data = pd.read_csv('checkins.csv')
+
+# Features: historical mental/physical wellness, workload
+X = data[['mental_wellbeing', 'physical_wellbeing', 'workload']]
+
+# Target: burnout risk (binary 0 or 1)
+y = data['burnout_risk']
+
+# Train the model
+model = RandomForestClassifier()
+model.fit(X, y)
+
+# Predict for new check-ins
+def recommend(mental, physical, workload):
+    prediction = model.predict([[mental, physical, workload]])
+    if prediction == 1:
+        return "Consider taking a break or managing your workload."
+    return "You're doing well, keep it up!"
