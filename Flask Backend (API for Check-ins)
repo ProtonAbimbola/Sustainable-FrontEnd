@@ -1,0 +1,66 @@
+from flask import Flask, request, jsonify
+from flask_sqlalchemy import SQLAlchemy
+from flask_jwt_extended import JWTManager, create_access_token
+from datetime import datetime
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///wellness.db'
+app.config['JWT_SECRET_KEY'] = 'super-secret-key'
+
+db = SQLAlchemy(app)
+jwt = JWTManager(app)
+
+# User Model
+class User(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(150), unique=True)
+    password = db.Column(db.String(150))
+
+# Check-in Model
+class Checkin(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    mental_wellbeing = db.Column(db.Integer)
+    physical_wellbeing = db.Column(db.Integer)
+    timestamp = db.Column(db.DateTime, default=datetime.utcnow)
+
+# API to submit daily check-ins
+@app.route('/api/checkin', methods=['POST'])
+def checkin():
+    data = request.get_json()
+    user_id = data['user_id']
+    mental = data['mental_wellbeing']
+    physical = data['physical_wellbeing']
+    checkin = Checkin(user_id=user_id, mental_wellbeing=mental, physical_wellbeing=physical)
+    db.session.add(checkin)
+    db.session.commit()
+    return jsonify({'message': 'Check-in submitted successfully!'}), 200
+
+if __name__ == '__main__':
+    db.create_all()
+    app.run(debug=True)
+2. Machine Learning (Simple Recommendation Model)
+python
+Copy code
+import pandas as pd
+from sklearn.ensemble import RandomForestClassifier
+
+# Sample check-in data
+data = pd.read_csv('checkins.csv')
+
+# Features: historical mental/physical wellness, workload
+X = data[['mental_wellbeing', 'physical_wellbeing', 'workload']]
+
+# Target: burnout risk (binary 0 or 1)
+y = data['burnout_risk']
+
+# Train the model
+model = RandomForestClassifier()
+model.fit(X, y)
+
+# Predict for new check-ins
+def recommend(mental, physical, workload):
+    prediction = model.predict([[mental, physical, workload]])
+    if prediction == 1:
+        return "Consider taking a break or managing your workload."
+    return "You're doing well, keep it up!"
