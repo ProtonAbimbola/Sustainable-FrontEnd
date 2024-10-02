@@ -1,0 +1,6 @@
+from app import db
+db.create_all()
+
+
+# run on bash
+flask run
