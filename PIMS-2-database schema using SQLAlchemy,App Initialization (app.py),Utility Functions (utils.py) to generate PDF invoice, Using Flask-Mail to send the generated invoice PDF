@@ -1,0 +1,95 @@
+from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
+
+db = SQLAlchemy()
+
+class Customer(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)
+    email = db.Column(db.String(120), unique=True, nullable=False)
+    phone = db.Column(db.String(15), nullable=False)
+
+class Invoice(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    customer_id = db.Column(db.Integer, db.ForeignKey('customer.id'), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow)
+    total_amount = db.Column(db.Float, nullable=False)
+    status = db.Column(db.String(20), default="Unpaid")
+    customer = db.relationship('Customer', backref='invoices')
+
+
+from flask import Flask, render_template, request, redirect, url_for, flash
+from models import db, Customer, Invoice
+from utils import generate_invoice_pdf, send_invoice_email
+from flask_mail import Mail
+
+app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///pims.db'
+app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['MAIL_SERVER'] = 'smtp.mailtrap.io'
+app.config['MAIL_PORT'] = 2525
+app.config['MAIL_USERNAME'] = 'your_mailtrap_username'
+app.config['MAIL_PASSWORD'] = 'your_mailtrap_password'
+
+db.init_app(app)
+mail = Mail(app)
+
+@app.route('/')
+def dashboard():
+    invoices = Invoice.query.all()
+    return render_template('dashboard.html', invoices=invoices)
+
+@app.route('/create_invoice', methods=['GET', 'POST'])
+def create_invoice():
+    if request.method == 'POST':
+        customer_id = request.form['customer_id']
+        total_amount = request.form['total_amount']
+        new_invoice = Invoice(customer_id=customer_id, total_amount=total_amount)
+        db.session.add(new_invoice)
+        db.session.commit()
+        
+        # Generate PDF and email
+        generate_invoice_pdf(new_invoice)
+        customer = Customer.query.get(customer_id)
+        send_invoice_email(customer.email, new_invoice)
+        
+        flash('Invoice created and emailed successfully!', 'success')
+        return redirect(url_for('dashboard'))
+    
+    customers = Customer.query.all()
+    return render_template('create_invoice.html', customers=customers)
+
+
+
+
+from fpdf import FPDF
+
+def generate_invoice_pdf(invoice):
+    pdf = FPDF()
+    pdf.add_page()
+    pdf.set_font("Arial", size=12)
+    
+    # Add the invoice details
+    pdf.cell(200, 10, txt=f"Invoice ID: {invoice.id}", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Customer: {invoice.customer.name}", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Amount: ${invoice.total_amount}", ln=True, align='C')
+    pdf.cell(200, 10, txt=f"Status: {invoice.status}", ln=True, align='C')
+    
+    # Save the PDF to file
+    pdf_file_path = f"invoices/invoice_{invoice.id}.pdf"
+    pdf.output(pdf_file_path)
+    return pdf_file_path
+
+
+
+from flask_mail import Message
+from app import mail
+
+def send_invoice_email(customer_email, invoice):
+    msg = Message('Your Invoice', recipients=[customer_email])
+    msg.body = f"Please find attached your invoice #{invoice.id}"
+    
+    with open(f'invoices/invoice_{invoice.id}.pdf', 'rb') as fp:
+        msg.attach(f'invoice_{invoice.id}.pdf', 'application/pdf', fp.read())
+    
+    mail.send(msg)
