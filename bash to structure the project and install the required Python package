@@ -1,0 +1,11 @@
+/PIMS
+    /static       # CSS, JS, Images
+    /templates    # HTML Templates for the web pages
+    /invoices     # Folder to store generated PDF invoices
+    app.py        # Main Python Flask application
+    models.py     # Database models
+    forms.py      # Flask-WTF forms (optional)
+    utils.py      # Utility functions like PDF generation, email sending
+    config.py     # Configuration for app (DB, email settings)
+
+    pip install Flask SQLAlchemy Flask-WTF Flask-Mail FPDF
