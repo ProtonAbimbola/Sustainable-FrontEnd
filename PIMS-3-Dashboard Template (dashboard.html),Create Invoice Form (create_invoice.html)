@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Invoice</title>
+</head>
+<body>
+    <h1>Create Invoice</h1>
+    <form action="{{ url_for('create_invoice') }}" method="POST">
+        <label for="customer">Customer</label>
+        <select name="customer_id" id="customer">
+            {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="amount">Total Amount</label>
+        <input type="number" name="total_amount" required>
+        <br>
+        <button type="submit">Create Invoice</button>
+    </form>
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Create Invoice</title>
+</head>
+<body>
+    <h1>Create Invoice</h1>
+    <form action="{{ url_for('create_invoice') }}" method="POST">
+        <label for="customer">Customer</label>
+        <select name="customer_id" id="customer">
+            {% for customer in customers %}
+            <option value="{{ customer.id }}">{{ customer.name }}</option>
+            {% endfor %}
+        </select>
+        <br>
+        <label for="amount">Total Amount</label>
+        <input type="number" name="total_amount" required>
+        <br>
+        <button type="submit">Create Invoice</button>
+    </form>
+</body>
+</html>
